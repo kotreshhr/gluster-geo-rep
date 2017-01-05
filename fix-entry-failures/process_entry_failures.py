@@ -61,6 +61,13 @@ def args_check_1():
         exit(1)
 
 def main():
+
+    if len(sys.argv) < 3:
+        print "ERROR: Insufficient arguments."
+        print "Usage: python process_entry_failures <georep_log_file> <master_aux_mount>"
+        print "Usage: python process_entry_failures --verify <outfile> <slave_aux_mount>"
+        exit(1)
+
     if "--verify" == sys.argv[1]:
         args_check_1()
         verify_entries()
@@ -73,17 +80,29 @@ def main():
     if os.path.exists(OUTFILE):
         os.unlink(OUTFILE)
 
+    entryRepeated = False
+    metaRepeated = False
+    prev_entry = ""
+    prev_meta = ""
     of = open (OUTFILE, 'a')
     with open (log_file) as f:
         for line in f:
             if "ENTRY FAILED" in line:
                 json_data = json.loads(parse_json(line))
-                if os.path.exists(mast_aux_mnt + '/' + json_data['entry']):
+                if prev_entry == json_data['entry']:
+                    entryRepeated = True
+                if os.path.exists(mast_aux_mnt + '/' + json_data['entry']) and not entryRepeated:
                     of.write(SETFATTR + mast_aux_mnt + '/' + json_data['entry'] + '\n')
+                prev_entry = json_data['entry']
+                entryRepeated = False
             elif "META FAILED" in line:
                 json_data = json.loads(parse_json(line))
-                if os.path.exists(mast_aux_mnt + '/' + json_data['go']):
+                if prev_meta == json_data['go']:
+                    metaRepeated = True
+                if os.path.exists(mast_aux_mnt + '/' + json_data['go']) and not metaRepeated:
                     of.write(SETFATTR + mast_aux_mnt + '/' + json_data['go'] + '\n')
+                prev_meta = json_data['go']
+                metaRepeated = False
 
     of.close()
 
