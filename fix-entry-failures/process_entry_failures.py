@@ -8,14 +8,14 @@ OUTFILE = 'process_entry_failures.out'
 def verify_entries ():
     out_file = sys.argv[2]
     slav_aux_mnt = sys.argv[3]
-   
+
     with open(out_file) as f:
         for line in f:
             path = line.split()[-1]
             path = slav_aux_mnt + "/".join(path.split("/")[2:])
             if not os.path.exists(path):
                     print("path %s is not synced to slave" % path)
-    
+
 def parse_json (line):
     data = line.split(" FAILED: (")[-1]
     data = data.rsplit("},", 1)[0]
@@ -63,7 +63,7 @@ def args_check_1():
 def main():
     if "--verify" == sys.argv[1]:
         args_check_1()
-        verify_entries() 
+        verify_entries()
         exit(0)
 
     args_check_0()
