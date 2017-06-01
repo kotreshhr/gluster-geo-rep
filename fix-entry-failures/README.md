@@ -12,6 +12,7 @@ The script should be run as follows:
 The name of output file generated is 'process_entry_failures.out'
 
 Sample 'process_entry_failures.out" file looks as below:
+```
 setfattr -n glusterfs.geo-rep.trigger-sync -v "1" /aux-mnt//.gfid/ac826afd-3017-405c-a48b-116187b39af0/prob_dir_file1
 setfattr -n glusterfs.geo-rep.trigger-sync -v "1" /aux-mnt//.gfid/ac826afd-3017-405c-a48b-116187b39af0/prob_dir_file2
 setfattr -n glusterfs.geo-rep.trigger-sync -v "1" /aux-mnt//.gfid/ac826afd-3017-405c-a48b-116187b39af0/prob_dir_file3
@@ -22,6 +23,8 @@ setfattr -n glusterfs.geo-rep.trigger-sync -v "1" /aux-mnt//.gfid/ac826afd-3017-
 setfattr -n glusterfs.geo-rep.trigger-sync -v "1" /aux-mnt//.gfid/ac826afd-3017-405c-a48b-116187b39af0/prob_dir_file8
 setfattr -n glusterfs.geo-rep.trigger-sync -v "1" /aux-mnt//.gfid/ac826afd-3017-405c-a48b-116187b39af0/prob_dir_file9
 setfattr -n glusterfs.geo-rep.trigger-sync -v "1" /aux-mnt//.gfid/ac826afd-3017-405c-a48b-116187b39af0/prob_dir_file10
+```
+
 
 NOTE: It's little tricky. We need to find out why the first entry is failed. And also need to check whether it's parent
       is synced. If it's parent is not synced, then all it's descedants would still fail even with above script.
