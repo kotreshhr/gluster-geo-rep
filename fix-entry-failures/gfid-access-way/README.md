@@ -16,6 +16,10 @@ The script generates following two files.
     ```
     #bash sync_entry.sh <master-aux-mnt> <slave-aux-mnt>
     ```
+    NOTE: aux-mnt is the auxillary fuse mount. It can be done as follows.
+    ```
+    #mount -t glusterfs <hostname>:<volname> <mount-point>
+    ```
 
 2. gfid_file.txt:
 
@@ -32,13 +36,11 @@ The script generates following two files.
      This should used as below by rsync to sync data from master node.
      
      ```
-     #cd <master-aux-mnt>
-     
      The slave mount can be done on slave host and use ssh as below to sync.
-     #rsync -aR --inplace --xattrs --acls --numeric-ids --no-implied-dirs --files-from=<path-to-gfid_file.txt> . -e "ssh" root@<slavehost>:/aux-slave-mnt
+     #rsync -aR --inplace --xattrs --acls --numeric-ids --no-implied-dirs --files-from=<path-to-gfid_file.txt> <master-aux-mnt> -e "ssh" root@<slavehost>:<slave-aux-mnt>
      
      OR
      
      The slave mount can be done on master node itself and use below command to sync.
-     #rsync -aR --inplace --xattrs --acls --numeric-ids --no-implied-dirs --files-from=<path-to-gfid_file.txt> . /aux-slave-mnt
+     #rsync -aR --inplace --xattrs --acls --numeric-ids --no-implied-dirs --files-from=<path-to-gfid_file.txt> <master-aux-mnt> <slave-aux-mnt>
      ```
