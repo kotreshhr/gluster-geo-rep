@@ -13,12 +13,20 @@ The script generates following two files.
     It is a bash script used to sync entries keeping
     the gfid intact between master and slave. This
     should be run as follows.
+
+    1. aux mount can be done as follows.
+    ```
+    #mount -t glusterfs <hostname>:<volname> <mount-point>
+
+    2. Disable md-cache on slave and enable it after entry failures are fixed
+    ```
+    #gluster vol set <slave-aux-mnt> stat-prefetch off
+    ```
+
+    3.
     ```
     #python sync_entry.py <master-aux-mnt> <slave-aux-mnt>
     ```
-    NOTE: aux-mnt is the auxillary fuse mount. It can be done as follows.
-    ```
-    #mount -t glusterfs <hostname>:<volname> <mount-point>
     ```
 
 2. gfid_file.txt:
