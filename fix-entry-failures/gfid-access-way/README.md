@@ -8,13 +8,13 @@ The script should be run as follows:
 
 The script generates following two files.
 
-1. sync_entry.sh:
+1. sync_entry.py:
 
     It is a bash script used to sync entries keeping
     the gfid intact between master and slave. This
     should be run as follows.
     ```
-    #bash sync_entry.sh <master-aux-mnt> <slave-aux-mnt>
+    #python sync_entry.py <master-aux-mnt> <slave-aux-mnt>
     ```
     NOTE: aux-mnt is the auxillary fuse mount. It can be done as follows.
     ```
