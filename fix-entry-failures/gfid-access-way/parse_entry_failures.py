@@ -17,7 +17,7 @@ def entry_sync(mst_mnt, slv_mnt, entry):
         try:
             entry_ops(slv_mnt, entry)
         except (OSError, IOError):
-            sys.stderr.write("ENTRY FAILED: %s\n" % repr(entry))
+            sys.stderr.write("ENTRY FAILED: %s\\n" % repr(entry))
 
 def sync_all_entries(mst_mnt, slv_mnt):
 """
@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
 def parse_json (line):
     data = line.split(" FAILED: (")[-1]
+    data = data.split("data=")[-1]
     return data.strip()
 
 def print_usage ():
@@ -85,13 +86,13 @@ def main():
                     egfid = json_data[2]
                     try:
                         path = os.readlink(os.path.join(brick_path, ".glusterfs", egfid[0:2], egfid[2:4], egfid))
-                        pgfid_bname=os.path.join(os.path.dirname(path).split('/')[-1], os.path.basename(path))
+                        pgfid_bname=os.path.join(".gfid", os.path.dirname(path).split('/')[-1], os.path.basename(path))
                         json_data2 = {'op': 'RENAME', 'gfid': egfid, 'entry':json_data[0]['entry'], 'entry1':pgfid_bname, 'stat':{}}
                         entry_fp.write("    entry_sync(mst_mnt, slv_mnt, \"%s\")\n" % (json_data2))
                     except OSError:
                         pass
                 if not entryRepeated:
-                    entry_fp.write("    entry_sync(mst_mnt, slv_mnt, \"%s\")\n" % (json_data))
+                    entry_fp.write("    entry_sync(mst_mnt, slv_mnt, \"%s\")\n" % (json_data[0]))
                     data_fp.write(".gfid/%s\n" % json_data[0]['gfid'])
                 prev_entry = json_data[0]['entry']
                 entryRepeated = False
