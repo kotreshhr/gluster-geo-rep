@@ -16,10 +16,13 @@ import struct
 import random
 import xattr
 import types
+from datetime import datetime
 
 from errno import EEXIST, ENOENT, ESTALE, EBUSY, EISDIR, EINVAL
 
 GX_GFID_CANONICAL_LEN = 37  # canonical gfid len + '\0'
+
+errlog = open("sync_err.log", 'a')
 
 def entry2pb(e):
     return e.rsplit('/', 1)
@@ -36,7 +39,7 @@ def _fmt_mkdir(l):
 def _fmt_symlink(l1, l2):
     return "!II%dsI%ds%ds" % (37, l1+1, l2+1)
 
-def entry_ops(mntpt, entry):
+def entry_ops(mntpt, entry, fix_gfid):
     pfx = ".gfid"
     # regular file
     def entry_pack_reg(gf, bn, mo, uid, gid):
@@ -237,6 +240,8 @@ def entry_ops(mntpt, entry):
                 os.rmdir(e['entry'])
             else:
                 os.unlink(e['entry'])
+                if fix_gfid:
+                    errlog.write("%s: Failed to fix gfid=%s\n" % (datetime.now(), fix_gfid))
 
         cmd_ret = xattr_set(pg, 'glusterfs.gfid.newfile', blob,
                              [EEXIST, ENOENT],

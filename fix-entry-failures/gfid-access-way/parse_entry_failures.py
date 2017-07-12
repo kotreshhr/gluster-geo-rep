@@ -11,11 +11,11 @@ SE_HEADER = "import os\nfrom resource import *\n\n\
 #Usage: python sync_entry.py <master-aux-mnt> <slave-aux-mnt>\n\n"
 
 SE_WRAP_FUNC = """
-def entry_sync(mst_mnt, slv_mnt, entry):
+def entry_sync(mst_mnt, slv_mnt, entry, fix_gfid=None):
     entry = eval(entry)
     if (os.path.lexists(mst_mnt + '/.gfid/' + entry['gfid'])):
         try:
-            entry_ops(slv_mnt, entry)
+            entry_ops(slv_mnt, entry, fix_gfid)
         except (OSError, IOError):
             sys.stderr.write("ENTRY FAILED: %s\\n" % repr(entry))
 
@@ -38,10 +38,10 @@ def parse_json (line):
     return data.strip()
 
 def print_usage ():
-    print "Usage: python parse_entry_failures <georep_log_file> <any-master-brick_path>"
+    print "Usage: python parse_entry_failures <georep_log_file> <mst-aux-mnt> <any-master-brick_path>"
 
 def args_check_0():
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         print "ERROR: Insufficient arguments."
         exit(1)
 
@@ -51,6 +51,10 @@ def args_check_0():
         exit(1)
 
     if not os.path.exists(sys.argv[2]):
+        print("ERROR: master aux mnt %s doesn't exist" % sys.argv[2])
+        print_usage()
+
+    if not os.path.exists(sys.argv[3]):
         print("ERROR: brick path %s doesn't exist" % sys.argv[2])
         print_usage()
 
@@ -59,7 +63,8 @@ def main():
     args_check_0()
 
     log_file = sys.argv[1]
-    brick_path = sys.argv[2]
+    mst_aux_mnt = sys.argv[2]
+    brick_path = sys.argv[3]
 
     enot_sup = False
     if os.path.exists(SYNC_ENTRY):
@@ -79,6 +84,7 @@ def main():
     with open (log_file) as f:
         for line in f:
             if "ENTRY FAILED" in line:
+                fix_gfid = None
                 json_data = eval(parse_json(line))
                 if prev_entry == json_data[0]['entry']:
                     entryRepeated = True
@@ -91,8 +97,14 @@ def main():
                         entry_fp.write("    entry_sync(mst_mnt, slv_mnt, \"%s\")\n" % (json_data2))
                     except OSError:
                         pass
+                if not entryRepeated and json_data[0]['op'] in ['MKNOD', 'CREATE'] and len(json_data) == 3:
+                    try:
+                        os.lstat(os.path.join(mst_aux_mnt, ".gfid", json_data[2]))
+                        fix_gfid = json_data[2]
+                    except (OSError, IOError):
+                       pass
                 if not entryRepeated:
-                    entry_fp.write("    entry_sync(mst_mnt, slv_mnt, \"%s\")\n" % (json_data[0]))
+                    entry_fp.write("    entry_sync(mst_mnt, slv_mnt, \"%s\", \"%s\")\n" % (json_data[0], fix_gfid))
                     data_fp.write(".gfid/%s\n" % json_data[0]['gfid'])
                 prev_entry = json_data[0]['entry']
                 entryRepeated = False
