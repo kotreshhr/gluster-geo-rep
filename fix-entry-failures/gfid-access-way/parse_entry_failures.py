@@ -17,7 +17,7 @@ def entry_sync(mst_mnt, slv_mnt, entry, fix_gfid=None):
         try:
             entry_ops(slv_mnt, entry, fix_gfid)
         except (OSError, IOError):
-            sys.stderr.write("ENTRY FAILED: %s\\n" % repr(entry))
+            errlog.write("ENTRY FAILED: %s\\n" % repr(entry))
 
 def sync_all_entries(mst_mnt, slv_mnt):
 """
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 """
 
 def parse_json (line):
-    data = line.split(" FAILED: (")[-1]
+    data = line.split(" FAILED: ")[-1]
     data = data.split("data=")[-1]
     return data.strip()
 
@@ -43,6 +43,7 @@ def print_usage ():
 def args_check_0():
     if len(sys.argv) < 4:
         print "ERROR: Insufficient arguments."
+        print_usage()
         exit(1)
 
     if not os.path.exists(sys.argv[1]):
@@ -75,6 +76,8 @@ def main():
     entryRepeated = False
     metaRepeated = False
     prev_entry = ""
+    prev_gfid = ""
+    prev_op = ""
     prev_meta = ""
 
     entry_fp = open (SYNC_ENTRY, 'a')
@@ -86,7 +89,7 @@ def main():
             if "ENTRY FAILED" in line:
                 fix_gfid = None
                 json_data = eval(parse_json(line))
-                if prev_entry == json_data[0]['entry']:
+                if prev_entry == json_data[0]['entry'] and prev_op == json_data[0]['op'] and prev_gfid == json_data[0]['gfid']:
                     entryRepeated = True
                 if not entryRepeated and json_data[0]['op'] == 'MKDIR' and len(json_data) == 3:
                     egfid = json_data[2]
@@ -107,6 +110,8 @@ def main():
                     entry_fp.write("    entry_sync(mst_mnt, slv_mnt, \"%s\", \"%s\")\n" % (json_data[0], fix_gfid))
                     data_fp.write(".gfid/%s\n" % json_data[0]['gfid'])
                 prev_entry = json_data[0]['entry']
+                prev_op = json_data[0]['op']
+                prev_gfid = json_data[0]['gfid']
                 entryRepeated = False
             elif "META FAILED" in line:
                 json_data = eval(parse_json(line))

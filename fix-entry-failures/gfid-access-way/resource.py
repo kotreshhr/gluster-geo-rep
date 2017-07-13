@@ -138,7 +138,7 @@ def entry_ops(mntpt, entry, fix_gfid):
         if not matching_disk_gfid(gfid, entry):
             print("RENAME ignored: source entry does not match "
                   "with on-disk gfid")
-            print e
+            errlog.write ("%s" % repr(e))
             return
 
         cmd_ret = errno_wrap(os.rename,
@@ -148,7 +148,7 @@ def entry_ops(mntpt, entry, fix_gfid):
             print "Fop RENAME successful"
         else:
             print "Fop RENAME Failed : %s" % cmd_ret
-            print e
+            errlog.write ("%s" % repr(e))
 
     os.chdir(mntpt)
     e = entry
@@ -188,7 +188,7 @@ def entry_ops(mntpt, entry, fix_gfid):
                 print "Fop LINK successful"
             else:
                 print "Fop LINK Failed : %s" % cmd_ret
-                print e
+                errlog.write ("%s" % repr(e))
     elif op == 'SYMLINK':
         blob = entry_pack_symlink(gfid, bname, e['link'], e['stat'])
     elif op == 'RENAME':
@@ -248,7 +248,7 @@ def entry_ops(mntpt, entry, fix_gfid):
                              [ESTALE, EINVAL, EBUSY])
         if not cmd_ret in [EEXIST]:
             print "Fop: %s failed Reason:%s " % (op, cmd_ret)
-            print "%s" % repr(e)
+            errlog.write("%s" % repr(e))
         else:
             print "Fop: %s successful" % op
 
